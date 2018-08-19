@@ -1,0 +1,103 @@
+#TopBanner {
+	height: 20pt;
+	
+	background-color: #888888;
+	border-bottom: 1pt solid black;
+}
+
+#FileButton {
+	
+}
+
+#ProjectExplorer {
+	width: 200pt;
+	max-width: calc(100% - 25pt);
+
+	background-color: #222222;
+}
+
+#CodeBox {
+	background-color: #222222;
+	min-width: 10pt;
+}
+
+#RightDivider {
+	width: 15pt;
+	box-sizing: border-box;
+	
+	background-color: #666666;
+	border-width: 0 0pt 0 0pt;
+	border-color: black;
+	border-style: solid;
+}
+
+#CommandBox {
+	background-color: #222222;
+	min-width: 10pt;
+}
+
+.codeText {
+	color: #bbbbbb;
+	font-family: Monospace;
+	font-size: 15pt;
+	padding: 2pt;
+}
+
+.lineCount {
+	border-right: 1.5pt solid #1a1a1a;
+}
+
+.arrow {
+	border: solid black;
+    border-width: 0 4px 4px 0;
+    display: inline-block;
+    padding: 4px;
+}
+
+.arrowRight {
+	transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.arrowLeft {
+	transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.flex {
+	display: flex;
+}
+
+.flexColumn {
+	flex-direction: column;
+}
+
+.flexRow {
+	flex-row: row;
+}
+
+.flexCenter {
+	justify-content: center;
+	align-items: center;
+}
+
+.flexDynamic {
+	flex-grow: 1;
+	flex-shrink: 1;
+	
+	width: 100%;
+	height: 100%;
+}
+
+.flexStatic {
+	flex-grow: 0;
+	flex-shrink: 0;
+}
+
+.ui-resizable-handle {
+	background-color: #666666;
+	
+	border-width: 0 1pt 0 0;
+	border-color: black;
+	border-style: solid;
+}

@@ -36,6 +36,11 @@
 	min-width: 10pt;
 }
 
+
+.tab {
+	width: 60pt;
+}
+
 .codeText {
 	color: #bbbbbb;
 	font-family: Monospace;

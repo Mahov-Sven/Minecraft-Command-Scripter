@@ -1,43 +1,123 @@
-const parserTokens = {
-	file: `<namespaceStatement>`,
-	
-	namespaceSatement: `<namespaceToken> <name>;`,
-	namespaceToken: `namespace`,
-	
-	importStatements: `<importStatement+>`,
-	importStatement: `<importToken> <name>;`,
-	importToken: `import`,
-	
-	typeStatement: `<typeToken> <name>(<typeParameters>);`,
-	typeToken: `type`,
-	
-	operationStatement: `<operationToken> <name>(<parameters>){<codeContent>}`,
-	operationToken: `operation`,
-	
-	functionStatement: `<functionToken> <name>(<parameters>){<codeContent>}`,
-	functionToken: `function`,
-	
-	parameters: `<parameter+>`,
-	parameter: `<parameterType> <name>,|<parameterType> <name>`,
-	parameterType: `<name>`,
-	
-	codeContent: `TODO`,
-	
-	string: `<character+>`,
-	character: `<nameChar>|<whitespace>|,|\\<|.|\\>|/|?|;|:|'|"|[|{|]|}|=|+|!|@|#|$|%|^|&|*|(|)|\\|\|`,
-	whitespaces: `<whitespace+>`,
-	whitespace: ` |\n|	|`,
-	
-	name: `<nameChar+>`,
-	nameChar: `<alpha>|<number>|-|_`,
-	
-	alphanumerics: `<alphanumeric+>`,
-	alphanumeric: `<alpha>|<number>`,
-	alphas: `<alpha+>`,
-	alpha: `<lowerAlpha>|<upperAlpha>`,
-	lowerAlpha: `a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z`,
-	upperAlpha: `A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z`,
-	
-	numbers: `<number+>`,
-	number: `0|1|2|3|4|5|6|7|8|9`,
-};
+$(document).ready(()=>{
+	const parser = new Parser();
+	parser.init(parserRuleset);
+});
+
+class Parser {
+
+	constructor(){
+		this.tokens = {};
+		this.rules = {};
+	}
+
+	init(ruleset){
+		for(const subruleName in ruleset){
+			const subruleString = ruleset[subruleName];
+
+			let subrule = new Subrule();
+			subrule.parse(subruleString);
+			if(subrule.isToken) this.tokens[subruleName] = subrule;
+			else this.rules[subruleName] = subrule;
+		}
+		console.log(this);
+
+		const parseTree = this.parseIntoTree(parserTestCode);
+		console.log(parseTree);
+	}
+
+	parseIntoTree(code){
+		const parseTree = new ParseTree();
+		const tokenTree = new TokenTree(this.tokens);
+
+		return parseTree;
+	}
+
+	_listTokenOptions(){
+		const tokenOptions = {};
+		for(const tokenName in this.tokens){
+			const currentTokenOptions = [];
+			for(const part in this.tokens[tokenName].parts){
+				currentTokenOptions.push(part);
+			}
+			tokenOptions[tokenName] = currentTokenOptions;
+		}
+		return tokenOptions;
+	}
+}
+
+class Subrule {
+	constructor(){
+		this.parts = [];
+		this.isToken = true;
+	}
+
+	parse(subruleString){
+		let currentBranch = []
+		let currentPart = new Token();
+		let previousChar = '';
+		for(const char of subruleString){
+			if(char === '<' && previousChar !== '\\'){
+				if(currentPart.content !== "") currentBranch.push(currentPart);
+				currentPart = new Rule();
+				this.isToken = false;
+			} else if(char === '>' && previousChar !== '\\'){
+				if(currentPart.content !== "") currentBranch.push(currentPart);
+				currentPart = new Token();
+
+			} else if(char === '|' && previousChar !== '\\') {
+				if(currentPart.content !== "") currentBranch.push(currentPart);
+				if(currentBranch.length > 0) this.parts.push(currentBranch);
+				currentPart = new Token();
+				currentBranch = [];
+			} else {
+				currentPart.add(char);
+			}
+			previousChar = char;
+		}
+		currentBranch.push(currentPart);
+		this.parts.push(currentBranch);
+	}
+}
+
+class Token {
+	constructor(){
+		this.content = "";
+	}
+
+	add(char){
+		this.content += char;
+	}
+}
+
+class Rule {
+	constructor(){
+		this.content = "";
+	}
+
+	add(char){
+		this.content += char;
+	}
+}
+
+class Tree {
+	constructor(){
+		this.root = this._node(undefined, []);
+	}
+
+	_node(parent, children){
+		return {parent: parent, children: children};
+	}
+}
+
+class ParseTree extends Tree {
+	constructor(){
+		super();
+	}
+}
+
+class TokenTree extends Tree {
+	constructor(tokens){
+		super();
+		
+	}
+}

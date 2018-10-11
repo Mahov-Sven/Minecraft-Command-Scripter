@@ -48,6 +48,7 @@ $(document).ready(()=>{
 			case 9: appendChar('\t'); event.preventDefault(); break;
 			case 13: appendChar('\n'); break;
 			case 16: case 17: case 20: break;
+			case 18: event.preventDefault(); break;
 			default: appendChar(key); break;
 		}
 	}

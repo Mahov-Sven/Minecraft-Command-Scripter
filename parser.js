@@ -146,7 +146,7 @@ class ParseTree extends Tree {
 	}
 
 	construct(tokenTree, rules, code){
-		const tokenArray = [];
+		const ruleArray = [];
 		let currentTokenNode = tokenTree.root;
 		let currentStartCharIndex = 0;
 		let currentSection = "";
@@ -166,27 +166,65 @@ class ParseTree extends Tree {
 				}
 
 				const parseNode = new Node(undefined, currentTokenNode.content, [currentSection]);
-				tokenArray.push(parseNode);
+				ruleArray.push(parseNode);
 				currentTokenNode = tokenTree.root.children[char];
 				currentSection = char;
 				currentStartCharIndex = chari;
 			}
 		}
-		console.log(tokenArray);
+		console.log(ruleArray);
 
 		let parentRuleFound = false;
 		let iteration = 0;
-		let consecutivePossibilities = new Set();
-		let possibilities = new Set();
+		let consecPoss = new Set();
+		let poss = new Set();
+		let parentRuleLength = 0;
 		do {
-			for(let tokenIndex = 0; tokenIndex < tokenArray.length; tokenIndex++){
-				const rule = tokenArray[tokenIndex];
-				const parentRules =
-				console.log(token);
-				if(!token.content)
-					throw new ParseError(`No Existing Parent to Rule '${token}'`);
+			for(let ruleIndex = 0; ruleIndex < ruleArray.length; ruleIndex++){
+				const rule = ruleArray[ruleIndex];
+				console.log(parentRuleLength, ruleIndex, rule, consecPoss, poss);
+				console.log(ruleArray);
+				if(!rule.content)
+					throw new ParseError(`No Existing Parent to Rule '${rule}'`);
 
-				for(const parentRule)
+				const parentRules = rules.getInverse(rule.content, parentRuleLength);
+				console.log(parentRules);
+				if(parentRules !== undefined){
+					for(const parentRule of parentRules)
+						if(consecPoss.size === 0 || consecPoss.has(parentRule))
+							poss.add(parentRule);
+
+					let tempSet = consecPoss;
+					consecPoss = poss;
+					poss = tempSet
+					poss.clear();
+					parentRuleLength++;
+				} else {
+					if (consecPoss.size === 0)
+						throw new ParseError(`There are no rule possibilities`);
+
+					let parentRules = [];
+					for(const rule of consecPoss) {
+						if(rules.) parentRules.push(rule);
+					}
+					console.log(parentRules);
+
+					if(parentRule.length !== 0){
+						const startParentRuleIndex = ruleIndex - parentRuleLength;
+						const parenRuleNode = new Node(undefined, parentRules);
+						for(let ruleNodei = startParentRuleIndex; ruleNodei < ruleIndex; ruleNodei++){
+							parenRuleNode.children.push(ruleArray[ruleNodei]);
+							ruleArray[ruleNodei].parent = parenRuleNode;
+						}
+						console.log("New Node", parenRuleNode);
+					}
+
+					ruleArray.splice(startParentRuleIndex, parentRuleLength, parenRuleNode);
+					ruleIndex = startParentRuleIndex;
+					parentRuleLength = 0;
+					consecPoss.clear();
+					poss.clear();
+				}
 			}
 			console.log(iteration++);
 		} while(parentRuleFound && iteration < 100);

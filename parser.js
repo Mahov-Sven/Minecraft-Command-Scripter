@@ -132,10 +132,13 @@ class Tree {
 }
 
 class Node {
-	constructor(parent=undefined, content=undefined, children=[]) {
+	constructor(parent=undefined, children=[], content = {}) {
 		this.parent = parent;
-		this.content = content;
 		this.children = children;
+
+		for(const field in content){
+			this[field] = content[field];
+		}
 	}
 }
 
@@ -159,13 +162,16 @@ class ParseTree extends Tree {
 				if(!currentTokenNode.content){
 					currentTokenNode = tokenTree.root.children[code[currentStartCharIndex]];
 					if(!currentTokenNode.content)
-						throw new ParseError(`Unknown token ${currentSection}`);
+						throw new ParseException(`Unknown token ${currentSection}`);
 					currentSection = code[currentStartCharIndex];
 					chari = currentStartCharIndex + 1;
 					char = code[chari];
 				}
 
-				const parseNode = new Node(undefined, currentTokenNode.content, [currentSection]);
+				const parseNode = new Node(undefined, [currentSection], {
+						rule: currentTokenNode.content,
+						branch: currentTokenNode.branch,
+					});
 				ruleArray.push(parseNode);
 				currentTokenNode = tokenTree.root.children[char];
 				currentSection = char;
@@ -185,7 +191,7 @@ class ParseTree extends Tree {
 				console.log(parentRuleLength, ruleIndex, rule, consecPoss, poss);
 				console.log(ruleArray);
 				if(!rule.content)
-					throw new ParseError(`No Existing Parent to Rule '${rule}'`);
+					throw new ParseException(`No Existing Parent to Rule '${rule.rule}'`);
 
 				const parentRules = rules.getInverse(rule.content, parentRuleLength);
 				console.log(parentRules);
@@ -201,11 +207,11 @@ class ParseTree extends Tree {
 					parentRuleLength++;
 				} else {
 					if (consecPoss.size === 0)
-						throw new ParseError(`There are no rule possibilities`);
+						throw new ParseException(`There are no rule possibilities`);
 
 					let parentRules = [];
 					for(const rule of consecPoss) {
-						if(rules.) parentRules.push(rule);
+						parentRules.push(rule);
 					}
 					console.log(parentRules);
 
@@ -243,17 +249,21 @@ class TokenTree extends Tree {
 		this.root = new Node(undefined, undefined, {});
 
 		for(const tokenName in tokens.matrix()){
-			for(const tokenBranch of tokens.getBranch(tokenName)){
+			for(const tokenBranchi in tokens.getBranch(tokenName)){
+				const tokenBranch = tokens.get(tokenName, tokenBranchi)
 				for(const tokenLeaf of tokenBranch){
 					let currentNode = this.root;
 					for(const char of tokenLeaf){
 						if(!currentNode.children[char]){
-							currentNode.children[char] = new Node(currentNode, undefined, {});
+							currentNode.children[char] = new Node(currentNode, [], {
+								content: undefined,
+								branch: tokenBranchi,
+							});
 						}
 						currentNode = currentNode.children[char];
 					}
 					if(currentNode.content && tokenLeaf !== "")
-						throw new ParseError(`Duplicate token "${tokenLeaf}" in subrules "${currentNode.content}" and "${tokenName}"`);
+						throw new ParseException(`Duplicate token "${tokenLeaf}" in subrules "${currentNode.content}" and "${tokenName}"`);
 					currentNode.content = tokenName;
 				}
 			}
@@ -261,7 +271,7 @@ class TokenTree extends Tree {
 	}
 }
 
-class ParseError extends Error {
+class ParseException extends Error {
 
 	constructor(...args){
 		super(...args);

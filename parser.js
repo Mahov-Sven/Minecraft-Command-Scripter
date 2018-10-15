@@ -3,12 +3,19 @@ $(document).ready(()=>{
 	parser.init(parserRuleset);
 });
 
+class Rule {
+	constructor(name, repeats, optional){
+		this.name = name;
+		this.repeats = repeats;
+		this.optional = optional;
+	}
+}
+
 class Parser {
 
 	constructor(){
 		this._tokens = new BiMatrix();
 		this._rules = new BiMatrix();
-		this._repeatingRules = new Set();
 		this._tokenTree = new TokenTree();
 		this._parseTree = new ParseTree();
 	}
@@ -27,6 +34,7 @@ class Parser {
 			let parsingRule = false;
 			let previousChar = '';
 			let repeats = false;
+			let optional = false;
 
 			for(const char of subruleString){
 				if(char === '<' && previousChar !== '\\'){
@@ -37,16 +45,15 @@ class Parser {
 					parsingRule = true;
 				} else if(char === '>' && previousChar !== '\\'){
 					if(currentPart !== ""){
-						currentBranch.push(currentPart);
-						if(repeats) this._repeatingRules.add(currentPart);
+						currentBranch.push(new Rule(currentPart, repeats, optional));
 						currentPart = "";
 					}
 					repeats = false;
+					optional = false;
 				} else if(char === '|' && previousChar !== '\\') {
 					if(currentPart !== ""){
 						currentBranch.push(currentPart);
 						currentPart = "";
-
 					}
 					if(parsingRule) this._rules.push(subruleName, currentBranch);
 					else this._tokens.push(subruleName, currentBranch);
@@ -54,6 +61,8 @@ class Parser {
 					parsingRule = false;
 				} else if(parsingRule && char === '+' && previousChar !== '\\') {
 					repeats = true;
+				} else if(parsingRule && char === '?' && previousChar !== '\\') {
+					optional = true;
 				} else if(char !== '\\' || previousChar === '\\'){
 					currentPart += char;
 				}
@@ -170,7 +179,7 @@ class ParseTree extends Tree {
 
 				const parseNode = new Node(undefined, [currentSection], {
 						rule: currentTokenNode.content,
-						branch: currentTokenNode.branch,
+						//branch: currentTokenNode.branch,
 					});
 				ruleArray.push(parseNode);
 				currentTokenNode = tokenTree.root.children[char];
@@ -180,25 +189,53 @@ class ParseTree extends Tree {
 		}
 		console.log(ruleArray);
 
+		const codeStringArray = [];
+		for(const ruleNode of ruleArray){
+			codeStringArray.push(ruleNode.children[0]);
+		}
+
+		console.log(codeStringArray);
+
 		let parentRuleFound = false;
 		let iteration = 0;
-		let consecPoss = new Set();
-		let poss = new Set();
+
+		let consecPoss = new Map();
+		let poss = new Map();
+		let parentRuleIndex = 0;
 		let parentRuleLength = 0;
 		do {
 			for(let ruleIndex = 0; ruleIndex < ruleArray.length; ruleIndex++){
-				const rule = ruleArray[ruleIndex];
-				console.log(parentRuleLength, ruleIndex, rule, consecPoss, poss);
+				const ruleNode = ruleArray[ruleIndex];
+				console.log(parentRuleLength, ruleIndex, ruleNode.rule, ruleNode.branch, consecPoss, poss);
+				console.log(codeStringArray);
 				console.log(ruleArray);
-				if(!rule.content)
-					throw new ParseException(`No Existing Parent to Rule '${rule.rule}'`);
+				if(!ruleNode.rule)
+					throw new ParseException(`No Existing Parent to Rule '${ruleNode.rule}'`);
 
-				const parentRules = rules.getInverse(rule.content, parentRuleLength);
+				const parentRules = rules.getInverse(ruleNode.rule, parentRuleLength);
 				console.log(parentRules);
 				if(parentRules !== undefined){
-					for(const parentRule of parentRules)
-						if(consecPoss.size === 0 || consecPoss.has(parentRule))
-							poss.add(parentRule);
+					for(const parentRule of parentRules){
+						if(consecPoss.size === 0){
+							let branchPoss = [];
+							for(const branchI in rules.getBranch(parentRule)){
+								if(rules.get(parentRule, branchI)[0] === ruleNode.rule)
+									branchPoss.push(branchI)
+							}
+							console.log(parentRule, branchPoss);
+							poss.set(parentRule, branchPoss);
+
+						} else if (consecPoss.has(parentRule)){
+							let branchPoss = [];
+							for(const branchI of consecPoss.get(parentRule)){
+								if(rules.get(parentRule, branchI)[parentRuleLength] === ruleNode.rule)
+									branchPoss.push(branchI);
+							}
+							console.log(parentRule, branchPoss);
+							if(branchPoss.length !== 0)
+								poss.set(parentRule, branchPoss);
+						}
+					}
 
 					let tempSet = consecPoss;
 					consecPoss = poss;
@@ -210,13 +247,13 @@ class ParseTree extends Tree {
 						throw new ParseException(`There are no rule possibilities`);
 
 					let parentRules = [];
-					for(const rule of consecPoss) {
+					for(const rule of consecPoss.keys()) {
 						parentRules.push(rule);
 					}
 					console.log(parentRules);
+					console.log(rules.getInverseBranch(codeStringArray.slice(parentRuleIndex, parentRuleIndex + parentRuleLength).join("")));
 
-					if(parentRule.length !== 0){
-						const startParentRuleIndex = ruleIndex - parentRuleLength;
+					if(parentRules.length !== 0){
 						const parenRuleNode = new Node(undefined, parentRules);
 						for(let ruleNodei = startParentRuleIndex; ruleNodei < ruleIndex; ruleNodei++){
 							parenRuleNode.children.push(ruleArray[ruleNodei]);

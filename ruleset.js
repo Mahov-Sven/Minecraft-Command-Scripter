@@ -1,21 +1,21 @@
 const parserRuleset = {
 	file:
-	`<whitespaces>` +
-	`<namespaceStatement><whitespaces>` +
+	`<whitespaces?>` +
+	`<namespaceStatement><whitespaces?>` +
 	`<importStatements>` +
 	`<functionalStatements>` +
-	`<whitespaces>`
+	`<whitespaces?>`
 	,
 
 	functionalStatements: `<functionalStatement_+>`,
-	functionalStatement_: `<functionalStatement><whitespaces>`,
-	functionalStatement: `<typeStatement>|<operationStatement>|<functionStatement>|<null>`,
+	functionalStatement_: `<functionalStatement><whitespaces?>`,
+	functionalStatement: `<typeStatement>|<operationStatement>|<functionStatement>`,
 
 	namespaceStatement: `<namespaceToken> <name>;`,
 	namespaceToken: `namespace`,
 
 	importStatements: `<importStatement_+>`,
-	importStatement_: `<importStatement><whitespaces>`,
+	importStatement_: `<importStatement><whitespaces?>`,
 	importStatement: `<importToken> <name>;`,
 	importToken: `import`,
 
@@ -39,7 +39,7 @@ const parserRuleset = {
 	string: `<character+>`,
 	character: `<nameChar>|<whitespace>|,|\\<|.|\\>|/|?|;|:|'|"|[|{|]|}|=|+|!|@|#|$|%|^|&|*|(|)|\\|\|`,
 	whitespaces: `<whitespace+>`,
-	whitespace: ` |\n|	|<null>`,
+	whitespace: ` |\n|	`,
 
 	name: `<nameChar+>`,
 	nameChar: `<alpha>|<number>|-|_`,

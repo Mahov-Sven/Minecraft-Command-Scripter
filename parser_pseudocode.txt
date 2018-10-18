@@ -1,0 +1,71 @@
+function parser.parse()
+	let validMove = true
+	let stateStack = [];
+	while validShift == true do
+		validShift = parser.shift(stateStack)
+
+		let validReduce = true
+		While validReduce == true do
+			validReduce = parser.reduce(stateStack)
+		end
+	end
+end
+
+function parser.reduce(stateStack)
+	let node = stateStack.top() // do not remove the top node
+	for ruleParentArr of rules.getParents(node.rule) do
+		let [ruleParentName ruleParentBranchi] = ruleParentArr
+		if(parser.reduce.branchReduce(stateStack, ruleParentName, ruleParentBranchi)) do
+			return true
+		end
+	end
+	return false
+end
+
+parser.reduce.branchReduce(stateStack, ruleParentName, ruleParentBranchi)
+	let ruleParentBranch = rules.getBranch(ruleParentName, ruleParentBranchi)
+	let maxi = (ruleParentBranch.length - 1)
+	for branchi from 0 to maxi do
+		let stacki = maxi - branchi
+		let stackNode = stateStack.get(stacki)
+		if(!(stackNode.rule == ruleParentBranch.get(branchi) && stackNode.branch == ruleParentBranchi)) do
+			return false
+		end
+	end
+
+	let node
+	node.parent = null
+	node.children = []
+	node.rule = ruleParentName
+	node.branch = ruleParentBranchi
+
+	for stacki from 0 to maxi do
+		let stackNode = stateStack.get(stacki)
+		stackNode.parent = node
+		node.children.push(stackNode)
+	end
+
+	stateStack.remove(0 to maxi)
+	stateStack.push(node)
+	return true
+end
+
+function parser.shift(stateStack)
+	if(!lexer.hasNext()) return false
+	let node
+	node.parent = null
+	node.children = []
+	node.token = lexer.next()
+	node.rule = tokenRules.getRule(token)
+	node.branch = tokenRules.getBranch(token)
+	stateStack.push(node)
+	return true
+end
+
+RuleMap
+	getParents:	RuleName 		=> Array of format [RuleParentName RuleParentBranchIndex] sorted by branch length from smallest to largest
+	getBranch:	RuleName, BranchIndex	=> RuleBranch: Array of format [RuleChild]
+
+TokenMap
+	getRule:	TokenChar 		=> RuleName
+	getBranch:	TokenChar 		=> BranchIndex

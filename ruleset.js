@@ -1,4 +1,4 @@
-const parserRuleset = {
+const Ruleset = {
 	file:
 	`<whitespaces?>` +
 	`<namespaceStatement><whitespaces?>` +
@@ -35,6 +35,9 @@ const parserRuleset = {
 
 	codeContent: `TODO`,
 	returnToken: `return`,
+
+	mccompileStatement: `mccompile("<mcfunction>");`
+	mcfunction: `tp @s 0 0 0`
 
 	string: `<character+>`,
 	character: `<nameChar>|<whitespace>|,|\\<|.|\\>|/|?|;|:|'|"|[|{|]|}|=|+|!|@|#|$|%|^|&|*|(|)|\\|\|`,

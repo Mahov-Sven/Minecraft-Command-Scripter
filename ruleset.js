@@ -1,21 +1,21 @@
-const Ruleset = {
+const ruleset = {
 	file:
-	`<whitespaces?>` +
-	`<namespaceStatement><whitespaces?>` +
+	`<ws?>` +
+	`<namespaceStatement><ws?>` +
 	`<importStatements>` +
 	`<functionalStatements>` +
-	`<whitespaces?>`
+	`<ws?>`
 	,
 
 	functionalStatements: `<functionalStatement_+>`,
-	functionalStatement_: `<functionalStatement><whitespaces?>`,
+	functionalStatement_: `<functionalStatement><ws?>`,
 	functionalStatement: `<typeStatement>|<operationStatement>|<functionStatement>`,
 
 	namespaceStatement: `<namespaceToken> <name>;`,
 	namespaceToken: `namespace`,
 
 	importStatements: `<importStatement_+>`,
-	importStatement_: `<importStatement><whitespaces?>`,
+	importStatement_: `<importStatement><ws?>`,
 	importStatement: `<importToken> <name>;`,
 	importToken: `import`,
 
@@ -36,12 +36,14 @@ const Ruleset = {
 	codeContent: `TODO`,
 	returnToken: `return`,
 
-	mccompileStatement: `mccompile("<mcfunction>");`
-	mcfunction: `tp @s 0 0 0`
+	mcasm_declarator: `__mcasm__<ws?>{<ws?>"<mcasm_lines?>"<ws?>};`,
+	mcasm_lines: `<mcasm_line+>`,
+	mcasm_line: `tp @<selector:mcasm_selector> <x:number> <y:number> <z:number>`,
+	mcasm_selector: `s|a|e|r|p`,
 
 	string: `<character+>`,
 	character: `<nameChar>|<whitespace>|,|\\<|.|\\>|/|?|;|:|'|"|[|{|]|}|=|+|!|@|#|$|%|^|&|*|(|)|\\|\|`,
-	whitespaces: `<whitespace+>`,
+	ws: `<whitespace+>`,
 	whitespace: ` |\n|	`,
 
 	name: `<nameChar+>`,
@@ -54,7 +56,8 @@ const Ruleset = {
 	lowerAlpha: `a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z`,
 	upperAlpha: `A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z`,
 
-	decimal: `<numbers>.<numbers>`,
-	numbers: `<number+>`,
-	number: `0|1|2|3|4|5|6|7|8|9`,
+	number: `<decimal>|<integers>`,
+	decimal: `<integers>.<integers>`,
+	integers: `<integers+>`,
+	integer: `0|1|2|3|4|5|6|7|8|9`,
 };

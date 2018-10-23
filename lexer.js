@@ -1,8 +1,8 @@
-const Lexer = {};
+let lexer;
 
 $(document).ready(()=>{
-	Lexer = new Lexer();
-	Lexer.init(parserRuleset);
+	lexer = new Lexer();
+	lexer.init(ruleset);
 });
 
 class Lexer {
@@ -19,7 +19,7 @@ class Lexer {
 		 * tokens matrix, rules matrix, and markes rules as
 		 * repeating.
 		 */
-		this._parseRulset(Ruleset);
+		this._parseRulset(ruleset);
 	 }
 
 	_parseRulset(ruleset){
@@ -27,49 +27,52 @@ class Lexer {
 			const subruleString = ruleset[subruleName];
 
 			let currentBranch = [];
-			let currentPart = "";
+			let collectedChars = "";
 			let parsingRule = false;
 			let previousChar = '';
-			let repeats = false;
-			let optional = false;
-			let name = "";
+			let rule = {};
 
 			for(const char of subruleString){
 				if(char === '<' && previousChar !== '\\'){
-					if(currentPart !== ""){
-						currentBranch.push(currentPart);
-						currentPart = "";
+					if(collectedChars !== ""){
+						currentBranch.push(collectedChars);
+						collectedChars = "";
 					}
 					parsingRule = true;
+				} else if(char === ':' && previousChar !== '\\'){
+					if(collectedChars.length === 0)
+						throw new LexerException(`Rule name ended early in subrule '${subruleName}'`);
+					rule.name = collectedChars;
+					collectedChars = "";
 				} else if(char === '>' && previousChar !== '\\'){
-					if(currentPart !== ""){
-						currentBranch.push(new Rule(currentPart, repeats, optional));
-						currentPart = "";
-					}
-					repeats = false;
-					optional = false;
+					if(collectedChars.length === 0)
+						throw new LexerException(`Rule name ended early in subrule '${subruleName}'`);
+					rule._name = collectedChars;
+					currentBranch.push(rule);
+					collectedChars = "";
+					rule = {};
 				} else if(char === '|' && previousChar !== '\\') {
-					if(currentPart !== ""){
-						currentBranch.push(currentPart);
-						currentPart = "";
+					if(collectedChars !== ""){
+						currentBranch.push(collectedChars);
+						collectedChars = "";
 					}
-					if(parsingRule) this._rules.push(subruleName, currentBranch);
-					else this._tokens.push(subruleName, currentBranch);
+					if(parsingRule) this._rules[subruleName] = currentBranch;
+					else this._tokens[subruleName] = currentBranch;
 					currentBranch = [];
 					parsingRule = false;
 				} else if(parsingRule && char === '+' && previousChar !== '\\') {
-					repeats = true;
+					rule.repeats = true;
 				} else if(parsingRule && char === '?' && previousChar !== '\\') {
-					optional = true;
+					rule.optional = true;
 				} else if(char !== '\\' || previousChar === '\\'){
-					currentPart += char;
+					collectedChars += char;
 				}
 				previousChar = char;
 			}
-			if(currentPart !== "") currentBranch.push(currentPart);
+			if(collectedChars !== "") currentBranch.push(collectedChars);
 			if(currentBranch.length > 0){
-				if(parsingRule) this._rules.push(subruleName, currentBranch);
-				else this._tokens.push(subruleName, currentBranch);
+				if(parsingRule) this._rules[subruleName] = currentBranch;
+				else this._tokens[subruleName] = currentBranch;
 			}
 		}
 		console.log(this);

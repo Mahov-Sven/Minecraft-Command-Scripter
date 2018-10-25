@@ -36,7 +36,8 @@ const ruleset = {
 	codeContent: `TODO`,
 	returnToken: `return`,
 
-	mcasm_declarator: `__mcasm__<ws?>{<ws?>"<mcasm_lines?>"<ws?>};`,
+	mcasm_declarator: `<mcasm_token><ws?>{<ws?>"<mcasm_lines?>"<ws?>};`,
+	mcasm_token: `__mcasm__`,
 	mcasm_lines: `<mcasm_line+>`,
 	mcasm_line: `tp @<selector:mcasm_selector> <x:number> <y:number> <z:number>`,
 	mcasm_selector: `s|a|e|r|p`,
